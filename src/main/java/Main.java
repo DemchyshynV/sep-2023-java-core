@@ -1,7 +1,5 @@
-import enums.Type;
-import models.Car;
-import models.DriveLicense;
-import models.Owner;
+import models.Address;
+import models.Person;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -10,31 +8,36 @@ import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
+import java.util.Arrays;
+
 public class Main {
     public static void main(String[] args) {
-         StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
-                         .configure("hibernate.cfg.xml")
-                         .build();
+        StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+                .configure("hibernate.cfg.xml")
+                .build();
 
-                 Metadata metadata = new MetadataSources(serviceRegistry)
-                         .addAnnotatedClass(Car.class)
-                         .addAnnotatedClass(DriveLicense.class)
-                         .addAnnotatedClass(Owner.class)
-                         .getMetadataBuilder()
-                         .build();
+        Metadata metadata = new MetadataSources(serviceRegistry)
+                .addAnnotatedClass(Person.class)
+                .addAnnotatedClass(Address.class)
+                .getMetadataBuilder()
+                .build();
 
-                 try (
-                         SessionFactory sessionFactory = metadata.getSessionFactoryBuilder().build();
-                         Session session = sessionFactory.openSession()
-                 ) {
-                     Transaction transaction = session.beginTransaction();
-//                     Owner owner = new Owner("Max", new DriveLicense("B"));
-//                     session.save(owner);
-                     Owner owner = session.find(Owner.class, 1);
-//                     Car car = new Car("KIA", Type.HATCHBACK, 200, 200, 2000, owner);
-//                     session.save(car);
-                     System.out.println(owner);
-                     transaction.commit();
-                 }
+        try (
+                SessionFactory sessionFactory = metadata.getSessionFactoryBuilder().build();
+                Session session = sessionFactory.openSession()
+        ) {
+            Transaction transaction = session.beginTransaction();
+            Person person = new Person();
+            person.setName("Max");
+            Address address = new Address();
+            address.setCity("Lviv");
+            address.setPerson(person);
+            person.setAddress(address);
+
+            session.persist(person);
+//            session.remove(address);
+            session.flush();
+            transaction.commit();
+        }
     }
 }
